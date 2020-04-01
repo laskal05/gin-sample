@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/contrib/sessions"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -12,7 +12,7 @@ import (
 func main() {
 	router := gin.Default()
 
-	store := sessions.NewCookieStore([]byte("secret"))
+	store := cookie.NewStore([]byte("secret"))
 	store.Options(sessions.Options{
 		MaxAge:   60,
 		Secure:   true,
@@ -22,9 +22,7 @@ func main() {
 
 	router.GET("/set", func(c *gin.Context) {
 		session := sessions.Default(c)
-		r := uuid.New().String()
-		fmt.Println(r)
-		session.Set("id", r)
+		session.Set("id", uuid.New().String())
 		session.Save()
 		c.JSON(http.StatusOK, gin.H{})
 		return
@@ -32,8 +30,9 @@ func main() {
 
 	router.GET("/get", func(c *gin.Context) {
 		session := sessions.Default(c)
-		fmt.Println(session.Get("id"))
-		c.JSON(http.StatusOK, gin.H{})
+		c.JSON(http.StatusOK, gin.H{
+			"id": session.Get("id"),
+		})
 		return
 	})
 
